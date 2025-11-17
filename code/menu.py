@@ -1,7 +1,7 @@
 from settings import *
 
 class Button:
-    def __init__(self, x, y, width, height, text, color, hover_color, text_color='white'):
+    def __init__(self, x, y, width, height, text, color, hover_color, text_color=(225,225,225)):
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
         self.color = color
@@ -16,7 +16,7 @@ class Button:
         offset = 6
         
         # Draw shadow/3D bottom layer (darker)
-        shadow_color = tuple(max(0, c - 60) for c in color)
+        shadow_color = tuple(max(0, c - 90) for c in color)
         shadow_rect = self.rect.copy()
         shadow_rect.y += offset
         pygame.draw.rect(surface, shadow_color, shadow_rect, border_radius=8)
@@ -25,17 +25,17 @@ class Button:
         pygame.draw.rect(surface, color, self.rect, border_radius=8)
         
         # Draw border/outline
-        border_color = tuple(max(0, c - 40) for c in color)
+        border_color = tuple(max(0, c - 70) for c in color)
         pygame.draw.rect(surface, border_color, self.rect, 3, border_radius=8)
         
         # Draw text
-        font = pygame.font.Font(FONT_PATH, 48)
+        font = pygame.font.Font(FONT_PATH, 32)
         text_surf = font.render(self.text, True, self.text_color)
         text_rect = text_surf.get_rect(center=self.rect.center)
         
         # Text shadow for readability
         shadow_text = font.render(self.text, True, (0, 0, 0))
-        shadow_text_rect = shadow_text.get_rect(center=(self.rect.centerx + 2, self.rect.centery + 2))
+        shadow_text_rect = shadow_text.get_rect(center=(self.rect.centerx + 3, self.rect.centery + 3))
         surface.blit(shadow_text, shadow_text_rect)
         surface.blit(text_surf, text_rect)
     
@@ -48,8 +48,8 @@ class Button:
 class Menu:
     def __init__(self, display_surface):
         self.display_surface = display_surface
-        self.font_large = pygame.font.Font(FONT_PATH, 96)
-        self.font_medium = pygame.font.Font(FONT_PATH, 48)
+        self.font_large = pygame.font.Font(FONT_PATH, 72)
+        self.font_medium = pygame.font.Font(FONT_PATH, 32)
         
         # Load menu background
         try:
@@ -64,32 +64,32 @@ class Menu:
         self.sfx_volume = 0.5
         
         # Main Menu Buttons
-        button_width, button_height = 300, 80
+        button_width, button_height = 360, 80
         button_x = WINDOW_WIDTH // 2 - button_width // 2
         
         self.start_button = Button(
-            button_x, 320, button_width, button_height,
+            button_x, 320, 320, button_height,
             'START', (34, 139, 34), (50, 205, 50)
         )
         
         self.settings_button = Button(
-            button_x, 430, button_width, button_height,
+            button_x, 430, 320, button_height,
             'SETTINGS', (70, 130, 180), (100, 149, 237)
         )
         
         self.exit_button = Button(
-            button_x, 540, button_width, button_height,
+            button_x, 540, 320, button_height,
             'EXIT', (178, 34, 34), (220, 20, 60)
         )
         
         # Game Over Buttons
         self.play_again_button = Button(
-            button_x, 350, button_width, button_height,
+            button_x, 350, 400, button_height,
             'PLAY AGAIN', (34, 139, 34), (50, 205, 50)
         )
         
         self.menu_button = Button(
-            button_x, 460, button_width, button_height,
+            button_x, 460, 400, button_height,
             'MAIN MENU', (70, 130, 180), (100, 149, 237)
         )
         
@@ -119,7 +119,7 @@ class Menu:
         slider_x = WINDOW_WIDTH // 2 - slider_width // 2
         
         self.music_slider_rect = pygame.Rect(slider_x, 300, slider_width, slider_height)
-        self.sfx_slider_rect = pygame.Rect(slider_x, 420, slider_width, slider_height)
+        self.sfx_slider_rect = pygame.Rect(slider_x, 450, slider_width, slider_height)
         
         self.back_button = Button(
             button_x, 550, button_width, button_height,
@@ -138,12 +138,12 @@ class Menu:
             self.display_surface.fill((20, 20, 30))
         
         # Title
-        title = self.font_large.render('SURVIVOR', True, 'white')
+        title = self.font_large.render('SURVIVOR', True, (225,225,225))
         title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, 200))
         
         # Title shadow
         shadow = self.font_large.render('SURVIVOR', True, (50, 50, 50))
-        shadow_rect = shadow.get_rect(center=(WINDOW_WIDTH // 2 + 4, 204))
+        shadow_rect = shadow.get_rect(center=(WINDOW_WIDTH // 2 + 5, 205))
         self.display_surface.blit(shadow, shadow_rect)
         self.display_surface.blit(title, title_rect)
         
@@ -175,7 +175,7 @@ class Menu:
         self.display_surface.blit(game_over_text, game_over_rect)
         
         # Score
-        score_text = self.font_medium.render(f'Score: {score}', True, 'white')
+        score_text = self.font_medium.render(f'Score: {score}', True, (225,225,225))
         score_rect = score_text.get_rect(center=(WINDOW_WIDTH // 2, 280))
         self.display_surface.blit(score_text, score_rect)
         
@@ -211,7 +211,7 @@ class Menu:
         self.display_surface.blit(overlay, (0, 0))
         
         # Pause text
-        pause_text = self.font_large.render('PAUSED', True, 'white')
+        pause_text = self.font_large.render('PAUSED', True, (225,225,225))
         pause_rect = pause_text.get_rect(center=(WINDOW_WIDTH // 2, 130))
         
         # Shadow effect
@@ -258,8 +258,8 @@ class Menu:
             else:
                 self.display_surface.fill((20, 20, 30))
         
-        # Title
-        title = self.font_large.render('SETTINGS', True, 'white')
+        # Settings Title
+        title = self.font_large.render('SETTINGS', True, (225,225,225))
         title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, 120))
         shadow = self.font_large.render('SETTINGS', True, (50, 50, 50))
         shadow_rect = shadow.get_rect(center=(WINDOW_WIDTH // 2 + 4, 124))
@@ -267,27 +267,27 @@ class Menu:
         self.display_surface.blit(title, title_rect)
         
         # Music Volume Label and Slider
-        music_label = self.font_medium.render('Music Volume', True, 'white')
-        music_label_rect = music_label.get_rect(center=(WINDOW_WIDTH // 2, 250))
+        music_label = self.font_medium.render('Music Volume', True, (225,225,225))
+        music_label_rect = music_label.get_rect(center=(WINDOW_WIDTH // 2, 260))
         self.display_surface.blit(music_label, music_label_rect)
         
         self.draw_slider(self.music_slider_rect, self.music_volume)
         
         # Music volume percentage
-        music_percent = self.font_medium.render(f'{int(self.music_volume * 100)}%', True, 'white')
-        music_percent_rect = music_percent.get_rect(center=(WINDOW_WIDTH // 2, 340))
+        music_percent = self.font_medium.render(f'{int(self.music_volume * 100)}%', True, (225,225,225))
+        music_percent_rect = music_percent.get_rect(center=(WINDOW_WIDTH // 2, 345))
         self.display_surface.blit(music_percent, music_percent_rect)
         
         # SFX Volume Label and Slider
-        sfx_label = self.font_medium.render('Sound Effects', True, 'white')
-        sfx_label_rect = sfx_label.get_rect(center=(WINDOW_WIDTH // 2, 370))
+        sfx_label = self.font_medium.render('Sound Effects', True, (225,225,225))
+        sfx_label_rect = sfx_label.get_rect(center=(WINDOW_WIDTH // 2, 410))
         self.display_surface.blit(sfx_label, sfx_label_rect)
         
         self.draw_slider(self.sfx_slider_rect, self.sfx_volume)
         
         # SFX volume percentage
-        sfx_percent = self.font_medium.render(f'{int(self.sfx_volume * 100)}%', True, 'white')
-        sfx_percent_rect = sfx_percent.get_rect(center=(WINDOW_WIDTH // 2, 460))
+        sfx_percent = self.font_medium.render(f'{int(self.sfx_volume * 100)}%', True, (225,225,225))
+        sfx_percent_rect = sfx_percent.get_rect(center=(WINDOW_WIDTH // 2, 495))
         self.display_surface.blit(sfx_percent, sfx_percent_rect)
         
         # Back button
@@ -307,7 +307,7 @@ class Menu:
         # Draw handle (circle)
         handle_x = rect.x + filled_width
         handle_y = rect.centery
-        pygame.draw.circle(self.display_surface, 'white', (handle_x, handle_y), 15)
+        pygame.draw.circle(self.display_surface, (225,225,225), (handle_x, handle_y), 15)
         pygame.draw.circle(self.display_surface, (70, 130, 180), (handle_x, handle_y), 12)
     
     def handle_settings_slider(self, mouse_pos, mouse_pressed):

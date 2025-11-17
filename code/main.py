@@ -135,7 +135,7 @@ class Game:
             for file in death_files:
                 surf = pygame.image.load(join(death_effect_path, file)).convert_alpha()
                 # Scale to a reasonable size for the effect
-                surf = pygame.transform.scale(surf, (128, 128))
+                surf = pygame.transform.scale(surf, (144, 144))
                 self.death_effect_frames.append(surf)
             print(f"Loaded {len(self.death_effect_frames)} death effect frames")
         except Exception as e:
@@ -158,7 +158,7 @@ class Game:
             for file in loading_files:
                 surf = pygame.image.load(join(LOADING_ANIMATION_PATH, file)).convert_alpha()
                 # Scale to reasonable size (e.g., 128x128)
-                surf = pygame.transform.scale(surf, (128, 128))
+                surf = pygame.transform.scale(surf, (240, 128))
                 self.loading_frames.append(surf)
             print(f"Loaded {len(self.loading_frames)} loading animation frames")
         except Exception as e:
@@ -167,7 +167,7 @@ class Game:
             for i in range(8):
                 surf = pygame.Surface((128, 128), pygame.SRCALPHA)
                 angle = i * 45
-                pygame.draw.arc(surf, 'white', (20, 20, 88, 88), 0, 3.14 * angle / 180, 10)
+                pygame.draw.arc(surf, (225,225,225), (20, 20, 88, 88), 0, 3.14 * angle / 180, 10)
                 self.loading_frames.append(surf)
 
     def setup_game(self):
@@ -343,13 +343,13 @@ class Game:
     
     def draw_score(self):
         """Draw score in the top left corner below hearts"""
-        font = pygame.font.Font(FONT_PATH, 48)
-        score_text = font.render(f'Score: {self.score}', True, 'white')
+        font = pygame.font.Font(FONT_PATH, 32)
+        score_text = font.render(f'Score: {self.score}', True, (225,225,225))
         score_rect = score_text.get_rect(topleft=(20, 80))  # Below the hearts
         
         # Draw shadow
         shadow_text = font.render(f'Score: {self.score}', True, (0, 0, 0))
-        shadow_rect = shadow_text.get_rect(topleft=(22, 82))
+        shadow_rect = shadow_text.get_rect(topleft=(23, 83))
         self.display_surface.blit(shadow_text, shadow_rect)
         self.display_surface.blit(score_text, score_rect)
     
@@ -410,8 +410,8 @@ class Game:
             self.display_surface.blit(frame, frame_rect)
         
         # Draw "Loading..." text
-        font = pygame.font.Font(FONT_PATH, 64)
-        loading_text = font.render('Loading...', True, 'white')
+        font = pygame.font.Font(FONT_PATH, 50)
+        loading_text = font.render('Loading...', True, (225,225,225))
         text_rect = loading_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 80))
         
         # Text shadow
