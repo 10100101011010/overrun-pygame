@@ -138,11 +138,11 @@ class Menu:
             self.display_surface.fill((20, 20, 30))
         
         # Title
-        title = self.font_large.render('SURVIVOR', True, (225,225,225))
+        title = self.font_large.render('OVERRUN', True, (225,225,225))
         title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, 200))
         
         # Title shadow
-        shadow = self.font_large.render('SURVIVOR', True, (50, 50, 50))
+        shadow = self.font_large.render('OVERRUN', True, (50, 50, 50))
         shadow_rect = shadow.get_rect(center=(WINDOW_WIDTH // 2 + 5, 205))
         self.display_surface.blit(shadow, shadow_rect)
         self.display_surface.blit(title, title_rect)
