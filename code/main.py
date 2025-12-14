@@ -12,10 +12,21 @@ class Game:
     def __init__(self):
         # setup
         pygame.init()
-        self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        
+        # Fullscreen management
+        self.is_fullscreen = False
+        self.windowed_size = (WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.display_surface = pygame.display.set_mode(self.windowed_size)
+        self.screen = self.display_surface  
+        
         pygame.display.set_caption('OVERRUN')
         self.clock = pygame.time.Clock()
         self.running = True
+        
+        # Scaling variables
+        self.scale = 1.0
+        self.offset_x = 0
+        self.offset_y = 0
         
         # Game states: 'menu', 'playing', 'paused', 'game_over'
         self.game_state = 'menu'
@@ -41,6 +52,76 @@ class Game:
         self.enemy_sprites = None
         self.player = None
         self.gun = None
+
+    def toggle_fullscreen(self):
+        """Toggle between windowed and fullscreen mode"""
+        self.is_fullscreen = not self.is_fullscreen
+        
+        if self.is_fullscreen:
+            # Switch to fullscreen mode
+            self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+            screen_width = self.screen.get_width()
+            screen_height = self.screen.get_height()
+            
+            # Calculate scaling to maintain aspect ratio
+            scale_x = screen_width / WINDOW_WIDTH
+            scale_y = screen_height / WINDOW_HEIGHT
+            self.scale = min(scale_x, scale_y)
+            
+            # Calculate offset for centering
+            scaled_width = WINDOW_WIDTH * self.scale
+            scaled_height = WINDOW_HEIGHT * self.scale
+            self.offset_x = (screen_width - scaled_width) / 2
+            self.offset_y = (screen_height - scaled_height) / 2
+            
+            # Create internal rendering surface
+            self.display_surface = pygame.Surface(self.windowed_size)
+        else:
+            # Switch back to windowed mode
+            self.screen = pygame.display.set_mode(self.windowed_size)
+            self.display_surface = self.screen
+            self.scale = 1.0
+            self.offset_x = 0
+            self.offset_y = 0
+        
+        # Update menu's display surface reference
+        self.menu.display_surface = self.display_surface
+        
+        # Update all_sprites display surface if it exists
+        if self.all_sprites:
+            self.all_sprites.set_display_surface(self.display_surface)
+    
+    def get_scaled_mouse_pos(self):
+        """Get mouse position scaled to game coordinates"""
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        
+        if self.is_fullscreen:
+            # Unscale and un-offset mouse position
+            game_x = (mouse_x - self.offset_x) / self.scale
+            game_y = (mouse_y - self.offset_y) / self.scale
+            
+            # Clamp to game bounds
+            game_x = max(0, min(WINDOW_WIDTH, game_x))
+            game_y = max(0, min(WINDOW_HEIGHT, game_y))
+            
+            return (int(game_x), int(game_y))
+        else:
+            return (mouse_x, mouse_y)
+    
+    def render_to_screen(self):
+        """Render the game surface to the actual screen with proper scaling"""
+        if self.is_fullscreen:
+            # Fill screen with black
+            self.screen.fill((0, 0, 0))
+            
+            # Scale the game surface
+            scaled_width = int(WINDOW_WIDTH * self.scale)
+            scaled_height = int(WINDOW_HEIGHT * self.scale)
+            scaled_surface = pygame.transform.scale(self.display_surface, (scaled_width, scaled_height))
+            
+            # Blit centered on screen
+            self.screen.blit(scaled_surface, (self.offset_x, self.offset_y))
+        # If not fullscreen, display_surface IS the screen, so nothing to do
 
     def load_audio(self):
         # Sound effects
@@ -173,7 +254,7 @@ class Game:
     def setup_game(self):
         """Initialize/reset the game"""
         # groups 
-        self.all_sprites = AllSprites()
+        self.all_sprites = AllSprites(self.display_surface)
         self.collision_sprites = pygame.sprite.Group()
         self.bullet_sprites = pygame.sprite.Group()
         self.enemy_sprites = pygame.sprite.Group()
@@ -428,8 +509,11 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F11:
+                    self.toggle_fullscreen()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                action = self.menu.handle_main_menu_click(pygame.mouse.get_pos(), True)
+                action = self.menu.handle_main_menu_click(self.get_scaled_mouse_pos(), True)
                 if action == 'start':
                     if self.button_click_sound:
                         self.button_click_sound.play()
@@ -444,15 +528,18 @@ class Game:
                         self.button_click_sound.play()
                     self.running = False
         
-        self.menu.draw_main_menu()
+        self.menu.draw_main_menu(self.get_scaled_mouse_pos())
 
     def handle_game_over(self):
         """Handle game over state"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F11:
+                    self.toggle_fullscreen()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                action = self.menu.handle_game_over_click(pygame.mouse.get_pos(), True)
+                action = self.menu.handle_game_over_click(self.get_scaled_mouse_pos(), True)
                 if action == 'play_again':
                     if self.button_click_sound:
                         self.button_click_sound.play()
@@ -470,7 +557,7 @@ class Game:
             self.all_sprites.draw(self.player.rect.center)
         
         # Draw game over overlay
-        self.menu.draw_game_over(self.score)
+        self.menu.draw_game_over(self.score, self.get_scaled_mouse_pos())
     
     def handle_loading(self):
         """Handle loading screen state"""
@@ -478,6 +565,9 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F11:
+                    self.toggle_fullscreen()
         
         # Draw loading screen
         self.draw_loading_screen()
@@ -498,12 +588,15 @@ class Game:
     
     def handle_settings(self):
         """Handle settings menu state"""
-        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = self.get_scaled_mouse_pos()
         mouse_pressed = pygame.mouse.get_pressed()[0]
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F11:
+                    self.toggle_fullscreen()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 action = self.menu.handle_settings_click(mouse_pos, True)
                 if action == 'back':
@@ -529,10 +622,10 @@ class Game:
                 self.all_sprites.draw(self.player.rect.center)
                 self.draw_health()
                 self.draw_score()
-            self.menu.draw_settings_menu(from_pause=True)
+            self.menu.draw_settings_menu(mouse_pos, from_pause=True)
         else:
             # Draw menu background
-            self.menu.draw_settings_menu(from_pause=False)
+            self.menu.draw_settings_menu(mouse_pos, from_pause=False)
     
     def handle_paused(self):
         """Handle paused state"""
@@ -544,8 +637,10 @@ class Game:
                     if self.button_click_sound:
                         self.button_click_sound.play()
                     self.game_state = 'playing'
+                if event.key == pygame.K_F11:
+                    self.toggle_fullscreen()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                action = self.menu.handle_pause_menu_click(pygame.mouse.get_pos(), True)
+                action = self.menu.handle_pause_menu_click(self.get_scaled_mouse_pos(), True)
                 if action == 'resume':
                     if self.button_click_sound:
                         self.button_click_sound.play()
@@ -575,7 +670,7 @@ class Game:
             self.draw_score()
         
         # Draw pause menu overlay
-        self.menu.draw_pause_menu()
+        self.menu.draw_pause_menu(self.get_scaled_mouse_pos())
 
     def handle_playing(self, dt):
         """Handle playing state"""
@@ -587,6 +682,8 @@ class Game:
                     if self.button_click_sound:
                         self.button_click_sound.play()
                     self.game_state = 'paused'
+                if event.key == pygame.K_F11:
+                    self.toggle_fullscreen()
             if event.type == self.enemy_event:
                 Enemy(choice(self.spawn_positions), choice(list(self.enemy_frames.values())), 
                       (self.all_sprites, self.enemy_sprites), self.player, self.collision_sprites)
@@ -622,6 +719,9 @@ class Game:
                 self.handle_loading()
             elif self.game_state == 'settings':
                 self.handle_settings()
+            
+            # Render to screen (handles fullscreen scaling if needed)
+            self.render_to_screen()
             
             pygame.display.update()
 

@@ -1,12 +1,19 @@
 from settings import * 
 
 class AllSprites(pygame.sprite.Group):
-    def __init__(self):
+    def __init__(self, display_surface=None):
         super().__init__()
-        self.display_surface = pygame.display.get_surface()
+        self.display_surface = display_surface
         self.offset = pygame.Vector2()
     
+    def set_display_surface(self, surface):
+        """Update the display surface reference"""
+        self.display_surface = surface
+    
     def draw(self, target_pos):
+        if self.display_surface is None:
+            self.display_surface = pygame.display.get_surface()
+            
         self.offset.x = -(target_pos[0] - WINDOW_WIDTH / 2)
         self.offset.y = -(target_pos[1] - WINDOW_HEIGHT / 2)
 

@@ -130,7 +130,7 @@ class Menu:
         self.dragging_music = False
         self.dragging_sfx = False
     
-    def draw_main_menu(self):
+    def draw_main_menu(self, mouse_pos):
         # Draw background or solid color
         if self.menu_background:
             self.display_surface.blit(self.menu_background, (0, 0))
@@ -148,7 +148,6 @@ class Menu:
         self.display_surface.blit(title, title_rect)
         
         # Buttons
-        mouse_pos = pygame.mouse.get_pos()
         self.start_button.check_hover(mouse_pos)
         self.settings_button.check_hover(mouse_pos)
         self.exit_button.check_hover(mouse_pos)
@@ -157,7 +156,7 @@ class Menu:
         self.settings_button.draw(self.display_surface)
         self.exit_button.draw(self.display_surface)
     
-    def draw_game_over(self, score=0):
+    def draw_game_over(self, score, mouse_pos):
         # Semi-transparent overlay
         overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
         overlay.set_alpha(200)
@@ -180,7 +179,6 @@ class Menu:
         self.display_surface.blit(score_text, score_rect)
         
         # Buttons
-        mouse_pos = pygame.mouse.get_pos()
         self.play_again_button.check_hover(mouse_pos)
         self.menu_button.check_hover(mouse_pos)
         
@@ -203,7 +201,7 @@ class Menu:
             return 'main_menu'
         return None
     
-    def draw_pause_menu(self):
+    def draw_pause_menu(self, mouse_pos):
         # Semi-transparent dark overlay
         overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
         overlay.set_alpha(200)
@@ -221,7 +219,6 @@ class Menu:
         self.display_surface.blit(pause_text, pause_rect)
         
         # Buttons
-        mouse_pos = pygame.mouse.get_pos()
         self.resume_button.check_hover(mouse_pos)
         self.pause_settings_button.check_hover(mouse_pos)
         self.restart_button.check_hover(mouse_pos)
@@ -243,7 +240,7 @@ class Menu:
             return 'main_menu'
         return None
     
-    def draw_settings_menu(self, from_pause=False):
+    def draw_settings_menu(self, mouse_pos, from_pause=False):
         # Background - either overlay or solid
         if from_pause:
             # Semi-transparent overlay if coming from pause
@@ -291,7 +288,6 @@ class Menu:
         self.display_surface.blit(sfx_percent, sfx_percent_rect)
         
         # Back button
-        mouse_pos = pygame.mouse.get_pos()
         self.back_button.check_hover(mouse_pos)
         self.back_button.draw(self.display_surface)
     
