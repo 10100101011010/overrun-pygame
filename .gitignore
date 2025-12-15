@@ -1,1 +1,48 @@
-code/__pycache__/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+
+# PyInstaller - Build outputs 
+build/
+dist/
+*.manifest
+
+# Virtual Environment 
+venv/
+env/
+ENV/
+.venv
+Scripts/
+Lib/
+Include/
+pyvenv.cfg
+
+# IDE / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Distribution / packaging
+*.egg-info/
+dist-packages/
+
+# Temporary files
+*.tmp
+*.bak
+*.old
