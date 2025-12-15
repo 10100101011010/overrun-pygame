@@ -1,18 +1,25 @@
 from settings import * 
 from math import atan2, degrees
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups):
         super().__init__(groups)
         self.image = surf
-        self.rect = self.image.get_frect(topleft = pos)
+        self.rect = self.image.get_rect(topleft = pos)
         self.ground = True
 
 class CollisionSprite(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups):
         super().__init__(groups)
         self.image = surf
-        self.rect = self.image.get_frect(topleft = pos)
+        self.rect = self.image.get_rect(topleft = pos)
 
 class Gun(pygame.sprite.Sprite):
     def __init__(self, player, groups):
@@ -23,9 +30,9 @@ class Gun(pygame.sprite.Sprite):
 
         # sprite setup 
         super().__init__(groups)
-        self.gun_surf = pygame.image.load(join('images', 'gun', 'gun.png')).convert_alpha()
+        self.gun_surf = pygame.image.load(resource_path(join('images', 'gun', 'gun.png'))).convert_alpha()
         self.image = self.gun_surf
-        self.rect = self.image.get_frect(center = self.player.rect.center + self.player_direction * self.distance)
+        self.rect = self.image.get_rect(center = self.player.rect.center + self.player_direction * self.distance)
     
     def get_direction(self):
         mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
@@ -49,7 +56,7 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, surf, pos, direction, groups):
         super().__init__(groups)
         self.image = surf 
-        self.rect = self.image.get_frect(center = pos)
+        self.rect = self.image.get_rect(center = pos)
         self.spawn_time = pygame.time.get_ticks()
         self.lifetime = BULLET_LIFETIME
 
@@ -73,7 +80,7 @@ class Enemy(pygame.sprite.Sprite):
         self.animation_speed = 6
 
         # rect 
-        self.rect = self.image.get_frect(center = pos)
+        self.rect = self.image.get_rect(center = pos)
         self.hitbox_rect = self.rect.inflate(-20,-40)
         self.collision_sprites = collision_sprites
         self.direction = pygame.Vector2()
@@ -82,7 +89,7 @@ class Enemy(pygame.sprite.Sprite):
         # timer 
         self.death_time = 0
         self.death_duration = 400
-        self.is_dying = False  # Track if enemy is in death animation
+        self.is_dying = False
     
     def animate(self, dt):
         self.frame_index += self.animation_speed * dt
@@ -112,17 +119,14 @@ class Enemy(pygame.sprite.Sprite):
                     if self.direction.y > 0: self.hitbox_rect.bottom = sprite.rect.top
 
     def destroy(self):
-        # Only start death animation if not already dying
         if not self.is_dying:
             self.is_dying = True
-            # start a timer 
             self.death_time = pygame.time.get_ticks()
-            # change the image 
             surf = pygame.mask.from_surface(self.frames[0]).to_surface()
             surf.set_colorkey('black')
             self.image = surf
-            return True  # Return True to indicate this is a new kill
-        return False  # Return False if already dying
+            return True
+        return False
     
     def death_timer(self):
         if pygame.time.get_ticks() - self.death_time >= self.death_duration:

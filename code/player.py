@@ -1,12 +1,19 @@
 from settings import * 
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups, collision_sprites):
         super().__init__(groups)
         self.load_images()
         self.state, self.frame_index = 'right', 0
-        self.image = pygame.image.load(join('images', 'player', 'down', '0.png')).convert_alpha()
-        self.rect = self.image.get_frect(center = pos)
+        self.image = pygame.image.load(resource_path(join('images', 'player', 'down', '0.png'))).convert_alpha()
+        self.rect = self.image.get_rect(center = pos)
         self.hitbox_rect = self.rect.inflate(-60, -90)
     
         # movement 
@@ -18,7 +25,8 @@ class Player(pygame.sprite.Sprite):
         self.frames = {'left': [], 'right': [], 'up': [], 'down': []}
 
         for state in self.frames.keys():
-            for folder_path, sub_folders, file_names in walk(join('images', 'player', state)):
+            player_state_path = resource_path(join('images', 'player', state))
+            for folder_path, sub_folders, file_names in walk(player_state_path):
                 if file_names:
                     for file_name in sorted(file_names, key= lambda name: int(name.split('.')[0])):
                         full_path = join(folder_path, file_name)

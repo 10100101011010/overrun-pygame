@@ -8,10 +8,19 @@ from menu import Menu
 from random import randint, choice
 from os import listdir
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS  # PyInstaller temp folder
+    except AttributeError:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 class Game:
     def __init__(self):
         # setup
         pygame.init()
+
+        pygame.display.set_icon(pygame.image.load(resource_path("images/ui/overrun_icon.png")))
         
         # Fullscreen management
         self.is_fullscreen = False
@@ -126,35 +135,35 @@ class Game:
     def load_audio(self):
         # Sound effects
         try:
-            self.shoot_sound = pygame.mixer.Sound(AUDIO_SHOOT)
+            self.shoot_sound = pygame.mixer.Sound(resource_path(AUDIO_SHOOT))
             self.shoot_sound.set_volume(0.2)
         except:
             print("Warning: shoot.wav not found")
             self.shoot_sound = None
             
         try:
-            self.impact_sound = pygame.mixer.Sound(AUDIO_IMPACT)
+            self.impact_sound = pygame.mixer.Sound(resource_path(AUDIO_IMPACT))
             self.impact_sound.set_volume(0.3)
         except:
             print("Warning: impact.ogg not found")
             self.impact_sound = None
             
         try:
-            self.player_death_sound = pygame.mixer.Sound(AUDIO_PLAYER_DEATH)
+            self.player_death_sound = pygame.mixer.Sound(resource_path(AUDIO_PLAYER_DEATH))
             self.player_death_sound.set_volume(0.4)
         except:
             print("Warning: player_death.wav not found")
             self.player_death_sound = None
             
         try:
-            self.player_revive_sound = pygame.mixer.Sound(AUDIO_PLAYER_REVIVE)
+            self.player_revive_sound = pygame.mixer.Sound(resource_path(AUDIO_PLAYER_REVIVE))
             self.player_revive_sound.set_volume(0.3)
         except:
             print("Warning: player_revive.wav not found")
             self.player_revive_sound = None
             
         try:
-            self.button_click_sound = pygame.mixer.Sound(AUDIO_BUTTON_CLICK)
+            self.button_click_sound = pygame.mixer.Sound(resource_path(AUDIO_BUTTON_CLICK))
             self.button_click_sound.set_volume(0.3)
         except:
             print("Warning: button_click.wav not found")
@@ -162,14 +171,14 @@ class Game:
         
         # Background music
         try:
-            self.menu_music = pygame.mixer.Sound(AUDIO_MENU_MUSIC)
+            self.menu_music = pygame.mixer.Sound(resource_path(AUDIO_MENU_MUSIC))
             self.menu_music.set_volume(0.3)
         except:
             print("Warning: menu_music.wav not found")
             self.menu_music = None
             
         try:
-            self.game_music = pygame.mixer.Sound(AUDIO_GAME_MUSIC)
+            self.game_music = pygame.mixer.Sound(resource_path(AUDIO_GAME_MUSIC))
             self.game_music.set_volume(0.3)
         except:
             print("Warning: game_music.wav not found")
@@ -178,17 +187,18 @@ class Game:
         self.current_music = None
 
     def load_images(self):
-        self.bullet_surf = pygame.image.load(join('images', 'gun', 'bullet.png')).convert_alpha()
+        self.bullet_surf = pygame.image.load(resource_path(join('images', 'gun', 'bullet.png'))).convert_alpha()
         
         # Load heart images for health display
         try:
             # Load full heart
-            heart_files = [f for f in listdir(join('images', 'ui', 'heart')) if f.endswith('.png')]
+            heart_dir = resource_path(join('images', 'ui', 'heart'))
+            heart_files = [f for f in listdir(heart_dir) if f.endswith('.png')]
             if len(heart_files) >= 2:
                 # Assuming first is full, second is empty (or sort them)
                 heart_files.sort()
-                self.heart_full_surf = pygame.image.load(join('images', 'ui', 'heart', heart_files[0])).convert_alpha()
-                self.heart_empty_surf = pygame.image.load(join('images', 'ui', 'heart', heart_files[1])).convert_alpha()
+                self.heart_full_surf = pygame.image.load(join(heart_dir, heart_files[0])).convert_alpha()
+                self.heart_empty_surf = pygame.image.load(join(heart_dir, heart_files[1])).convert_alpha()
                 # Scale them
                 self.heart_full_surf = pygame.transform.scale(self.heart_full_surf, (40, 40))
                 self.heart_empty_surf = pygame.transform.scale(self.heart_empty_surf, (40, 40))
@@ -211,7 +221,7 @@ class Game:
         # Load death effect frames
         self.death_effect_frames = []
         try:
-            death_effect_path = join('images', 'ui', 'death')
+            death_effect_path = resource_path(join('images', 'ui', 'death'))
             death_files = sorted([f for f in listdir(death_effect_path) if f.endswith('.png')])
             for file in death_files:
                 surf = pygame.image.load(join(death_effect_path, file)).convert_alpha()
@@ -222,10 +232,11 @@ class Game:
         except Exception as e:
             print(f"Warning: Death effect images not found: {e}")
 
-        folders = list(walk(join('images', 'enemies')))[0][1]
+        enemies_path = resource_path(join('images', 'enemies'))
+        folders = list(walk(enemies_path))[0][1]
         self.enemy_frames = {}
         for folder in folders:
-            for folder_path, _, file_names in walk(join('images', 'enemies', folder)):
+            for folder_path, _, file_names in walk(join(enemies_path, folder)):
                 self.enemy_frames[folder] = []
                 for file_name in sorted(file_names, key = lambda name: int(name.split('.')[0])):
                     full_path = join(folder_path, file_name)
@@ -235,9 +246,10 @@ class Game:
     def load_loading_animation(self):
         """Load loading animation frames"""
         try:
-            loading_files = sorted([f for f in listdir(LOADING_ANIMATION_PATH) if f.endswith('.png')])
+            loading_path = resource_path(LOADING_ANIMATION_PATH)
+            loading_files = sorted([f for f in listdir(loading_path) if f.endswith('.png')])
             for file in loading_files:
-                surf = pygame.image.load(join(LOADING_ANIMATION_PATH, file)).convert_alpha()
+                surf = pygame.image.load(join(loading_path, file)).convert_alpha()
                 # Scale to reasonable size (e.g., 128x128)
                 surf = pygame.transform.scale(surf, (240, 128))
                 self.loading_frames.append(surf)
@@ -300,7 +312,7 @@ class Game:
                 self.can_shoot = True
 
     def setup(self):
-        map = load_pygame(join('data', 'maps', 'world.tmx'))
+        map = load_pygame(resource_path(join('data', 'maps', 'world.tmx')))
 
         for x, y, image in map.get_layer_by_name('Ground').tiles():
             Sprite((x * TILE_SIZE,y * TILE_SIZE), image, self.all_sprites)
@@ -424,7 +436,7 @@ class Game:
     
     def draw_score(self):
         """Draw score in the top left corner below hearts"""
-        font = pygame.font.Font(FONT_PATH, 32)
+        font = pygame.font.Font(resource_path(FONT_PATH), 32)
         score_text = font.render(f'Score: {self.score}', True, (225,225,225))
         score_rect = score_text.get_rect(topleft=(20, 80))  # Below the hearts
         
@@ -491,7 +503,7 @@ class Game:
             self.display_surface.blit(frame, frame_rect)
         
         # Draw "Loading..." text
-        font = pygame.font.Font(FONT_PATH, 50)
+        font = pygame.font.Font(resource_path(FONT_PATH), 50)
         loading_text = font.render('Loading...', True, (225,225,225))
         text_rect = loading_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 80))
         

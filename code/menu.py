@@ -1,5 +1,12 @@
 from settings import *
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 class Button:
     def __init__(self, x, y, width, height, text, color, hover_color, text_color=(225,225,225)):
         self.rect = pygame.Rect(x, y, width, height)
@@ -29,7 +36,7 @@ class Button:
         pygame.draw.rect(surface, border_color, self.rect, 3, border_radius=8)
         
         # Draw text
-        font = pygame.font.Font(FONT_PATH, 32)
+        font = pygame.font.Font(resource_path(FONT_PATH), 32)
         text_surf = font.render(self.text, True, self.text_color)
         text_rect = text_surf.get_rect(center=self.rect.center)
         
@@ -48,12 +55,12 @@ class Button:
 class Menu:
     def __init__(self, display_surface):
         self.display_surface = display_surface
-        self.font_large = pygame.font.Font(FONT_PATH, 72)
-        self.font_medium = pygame.font.Font(FONT_PATH, 32)
+        self.font_large = pygame.font.Font(resource_path(FONT_PATH), 72)
+        self.font_medium = pygame.font.Font(resource_path(FONT_PATH), 32)
         
         # Load menu background
         try:
-            self.menu_background = pygame.image.load(MENU_BACKGROUND_PATH).convert()
+            self.menu_background = pygame.image.load(resource_path(MENU_BACKGROUND_PATH)).convert()
             self.menu_background = pygame.transform.scale(self.menu_background, (WINDOW_WIDTH, WINDOW_HEIGHT))
         except:
             print("Warning: Menu background not found, using solid color")
